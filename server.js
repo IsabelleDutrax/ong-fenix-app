@@ -6,13 +6,21 @@ const app = express();
 app.use(express.json());
 const port = process.env.PORT || 3000;
 
+// const pool = new Pool({
+//     user: process.env.DB_USER,
+//     host: process.env.DB_HOST,
+//     database: process.env.DB_NAME,
+//     password: process.env.DB_PASSWORD,
+//     port: process.env.DB_PORT,
+// });
+
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
+
 
 app.get('/', async (req, res) => {
     try {
@@ -269,76 +277,76 @@ app.delete('/usuarios/:id', async (req, res) => {
 
 // Doações endpoints
 app.post('/doacoes', async (req, res) => {
-  try {
-    const { doador_id, valor, data_doacao, forma_pagamento, status } = req.body;
-    
-    const query = `
+    try {
+        const { doador_id, valor, data_doacao, forma_pagamento, status } = req.body;
+
+        const query = `
       INSERT INTO doacoes (doador_id, valor, data_doacao, forma_pagamento, status)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
-    const values = [doador_id, valor, data_doacao, forma_pagamento, status];
-    
-    const newDoacao = await pool.query(query, values);
-    
-    res.status(201).json(newDoacao.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao registrar a doação." });
-  }
+        const values = [doador_id, valor, data_doacao, forma_pagamento, status];
+
+        const newDoacao = await pool.query(query, values);
+
+        res.status(201).json(newDoacao.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao registrar a doação." });
+    }
 });
 app.get('/doacoes', async (req, res) => {
-  try {
-    const query = 'SELECT * FROM doacoes;';
-    const allDoacoes = await pool.query(query);
-    
-    res.status(200).json(allDoacoes.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao buscar a lista de doações." });
-  }
+    try {
+        const query = 'SELECT * FROM doacoes;';
+        const allDoacoes = await pool.query(query);
+
+        res.status(200).json(allDoacoes.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao buscar a lista de doações." });
+    }
 });
 app.put('/doacoes/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { doador_id, valor, data_doacao, forma_pagamento, status } = req.body;
+    try {
+        const { id } = req.params;
+        const { doador_id, valor, data_doacao, forma_pagamento, status } = req.body;
 
-    const query = `
+        const query = `
       UPDATE doacoes
       SET doador_id = $1, valor = $2, data_doacao = $3, forma_pagamento = $4, status = $5
       WHERE id = $6
       RETURNING *;
     `;
-    const values = [doador_id, valor, data_doacao, forma_pagamento, status, id];
-    
-    const updatedDoacao = await pool.query(query, values);
+        const values = [doador_id, valor, data_doacao, forma_pagamento, status, id];
 
-    if (updatedDoacao.rows.length === 0) {
-      return res.status(404).json({ error: "Doação não encontrada." });
+        const updatedDoacao = await pool.query(query, values);
+
+        if (updatedDoacao.rows.length === 0) {
+            return res.status(404).json({ error: "Doação não encontrada." });
+        }
+
+        res.status(200).json(updatedDoacao.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao atualizar a doação." });
     }
-    
-    res.status(200).json(updatedDoacao.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao atualizar a doação." });
-  }
 });
 app.delete('/doacoes/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const query = 'DELETE FROM doacoes WHERE id = $1 RETURNING *;';
-    const deletedDoacao = await pool.query(query, [id]);
+        const query = 'DELETE FROM doacoes WHERE id = $1 RETURNING *;';
+        const deletedDoacao = await pool.query(query, [id]);
 
-    if (deletedDoacao.rows.length === 0) {
-      return res.status(404).json({ error: "Doação não encontrada." });
+        if (deletedDoacao.rows.length === 0) {
+            return res.status(404).json({ error: "Doação não encontrada." });
+        }
+
+        res.status(200).json({ message: "Doação excluída com sucesso." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao excluir a doação." });
     }
-
-    res.status(200).json({ message: "Doação excluída com sucesso." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao excluir a doação." });
-  }
 });
 
 app.listen(port, () => {
