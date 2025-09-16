@@ -1,22 +1,23 @@
-import { Pool } from "pg";
+import { env } from "../config/env.js";
 import { Client } from "pg";
+
 console.log({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  connectionString: process.env.DB_URL,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  database: env.DB_NAME,
+  connectionString: env.DB_URL,
   ssl: false,
 });
+
 const client = new Client({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  connectionString: process.env.DB_URL,
-  ssl: false,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  database: env.DB_NAME,
+  connectionString: env.DB_URL,
 });
 await client.connect();
 

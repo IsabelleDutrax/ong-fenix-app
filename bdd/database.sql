@@ -1,3 +1,5 @@
+
+
 [-- Tabela de Doadores]
 CREATE TABLE IF NOT EXISTS doadores (
 	id SERIAL PRIMARY KEY,

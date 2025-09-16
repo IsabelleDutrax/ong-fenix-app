@@ -1,18 +1,11 @@
-import { config } from "dotenv";
-
-// config({
-//   path: ".env",
-// });
-
-config();
-
+import { env } from "./config/env.js";
 import express from "express";
 import bcrypt from "bcrypt";
 import { client } from "./services/postgres.js";
 
 const app = express();
 app.use(express.json());
-const port = process.env.PORT || 3000;
+const port = env.PORT || 3000;
 
 app.get("/", async (req, res) => {
   try {
