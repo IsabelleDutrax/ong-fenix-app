@@ -1,11 +1,13 @@
-import { env } from "./config/env.js";
+// import { env } from "./config/env.js";
+import { pool } from "./services/postgres.js";
 import express from "express";
 import bcrypt from "bcrypt";
-import { client } from "./services/postgres.js";
 
 const app = express();
 app.use(express.json());
-const port = env.PORT || 3000;
+const port = 3000;
+
+let client;
 
 app.get("/", async (req, res) => {
   try {
@@ -343,6 +345,7 @@ app.delete("/doacoes/:id", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
+  client = await pool.connect();
 });
